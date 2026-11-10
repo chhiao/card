@@ -24,7 +24,7 @@
 
   /**
    * config: {
-   *   gameId: 'blackjack',
+   *   gameId: 'big-two',
    *   render: function (ctx) {...}   // 把牌桌畫進 ctx.root
    * }
    */
@@ -150,6 +150,8 @@
         return guest ? { name: guest.name, type: 'human', level: s.level, online: true }
           : { name: s.name, type: s.type, level: s.level };
       });
+      // 有線上好友時，預設名字「你」在好友畫面上會被誤會成他自己 → 改叫「房主」
+      if (players[0].name === '你' && players.some(function (q) { return q.online; })) players[0].name = '房主';
       // 沒排到座位的好友請他們先離開
       T.guests.slice().forEach(function (gu) {
         if (gu.seat === null) dropGuest(T, gu, { t: 'full', text: '這桌已經坐滿了，下次早點來！' });

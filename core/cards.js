@@ -1,6 +1,7 @@
 /* =========================================================
  * core/cards.js — 撲克牌資料結構 + 牌面繪製
  * 牌 = { id:'S7', s:'S', r:7 }  s ∈ C D H S（梅花 方塊 紅心 黑桃）, r ∈ 1..13（A=1, J=11, Q=12, K=13）
+ * 鬼牌 = { id:'JK', s:'X', r:0, joker:true }（用 Cards.joker() 產生）
  * 資料函式可在 Node 執行；el() 只在瀏覽器呼叫。
  * ========================================================= */
 (function (g) {
@@ -18,9 +19,11 @@
     isRed: function (s) { return s === 'H' || s === 'D'; },
     rankLabel: function (r) { return RANK_LABEL[r] || String(r); },
     /** '♠7' 這種給 log 用的短標籤 */
-    label: function (c) { return SYMBOL[c.s] + Cards.rankLabel(c.r); },
+    label: function (c) { return c.joker ? '🃏鬼牌' : SYMBOL[c.s] + Cards.rankLabel(c.r); },
     labels: function (cards) { return cards.map(Cards.label).join(' '); },
     make: function (s, r) { return { id: s + r, s: s, r: r }; },
+    /** 鬼牌（n = 第幾張，多張時 id 不重複） */
+    joker: function (n) { return { id: 'JK' + (n ? '#' + n : ''), s: 'X', r: 0, joker: true }; },
 
     /** 產生 n 副 52 張牌（不含鬼牌）。多副牌時 id 會加上副數避免重複。 */
     deck: function (n) {
@@ -56,6 +59,7 @@
       var h = CB.h;
       var cls = ['card', 'card-' + (opts.size || 'md')];
       if (opts.faceDown) cls.push('card-back');
+      else if (card.joker) cls.push('card-joker');
       else cls.push(Cards.isRed(card.s) ? 'card-red' : 'card-black');
       if (opts.selected) cls.push('is-selected');
       if (opts.playable) cls.push('is-playable');
@@ -64,9 +68,25 @@
 
       var attrs = { class: cls.join(' '), onclick: opts.onClick };
       if (opts.onClick) { attrs.role = 'button'; attrs.tabindex = '0'; }
+      function keys(node) {
+        if (opts.onClick) node.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); opts.onClick(e); }
+        });
+        return node;
+      }
       if (opts.faceDown) {
-        attrs['aria-label'] = '蓋著的牌';
-        return h('div', attrs);
+        attrs['aria-label'] = opts.title || '蓋著的牌';
+        if (opts.title) attrs.title = opts.title;
+        return keys(h('div', attrs));
+      }
+      if (card.joker) {
+        attrs['aria-label'] = '鬼牌';
+        attrs.title = opts.title || '鬼牌';
+        return keys(h('div', attrs,
+          h('span', { class: 'card-corner tl' }, h('b', null, '鬼'), h('i', null, '★')),
+          h('span', { class: 'card-pip' }, '🤡'),
+          h('span', { class: 'card-corner br' }, h('b', null, '鬼'), h('i', null, '★'))
+        ));
       }
       attrs['aria-label'] = SUIT_NAME[card.s] + Cards.rankLabel(card.r);
       attrs.title = opts.title || attrs['aria-label'];
@@ -76,10 +96,7 @@
         h('span', { class: 'card-pip' }, sym),
         h('span', { class: 'card-corner br' }, h('b', null, rank), h('i', null, sym))
       );
-      if (opts.onClick) el.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); opts.onClick(e); }
-      });
-      return el;
+      return keys(el);
     },
 
     /** 一排牌（手牌） */

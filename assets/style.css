@@ -155,21 +155,19 @@ button, input, select { font: inherit; }
 .player-name small { color: #a9c2ae; }
 .player-sum { font-size: .85rem; color: #d3dfd2; white-space: nowrap; }
 .log-panel { flex: 1; min-height: 200px; display: flex; flex-direction: column; }
-.log-list { margin: 0; padding: 0 0 0 1.2em; overflow-y: auto; max-height: 48vh; font-size: .88rem; color: #dfe9dd; }
+.log-list { margin: 0; padding: 0 0 0 2em; overflow-y: auto; max-height: 48vh; font-size: .88rem; color: #dfe9dd; }
 .log-list li { padding: 2px 0; }
 .log-list li:last-child { color: var(--gold); font-weight: 700; }
 .seed { font-size: .8rem; color: #8fae98; margin: 0; text-align: center; }
 
 /* 牌桌區塊 */
 .zone-label, .opp-name, .pile-label { font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; flex-wrap: wrap; gap: 2px; }
-.round-banner { align-self: center; background: rgba(0,0,0,.3); padding: .2em 1.2em; border-radius: 999px; font-size: .9rem; }
-.zone-dealer { align-self: center; text-align: center; }
-.zone-dealer .zone-label { justify-content: center; }
 
 .opponents { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
 .opp { background: rgba(0,0,0,.2); border-radius: var(--radius); padding: 10px 12px; min-width: 160px; max-width: 100%; border: 2px solid transparent; }
 .opp.is-turn, .seat.is-turn, .my-hand.is-turn { border-color: var(--gold); box-shadow: 0 0 0 4px rgba(224,180,76,.2), 0 0 24px rgba(224,180,76,.25); }
 .opp.is-danger .badge { background: var(--danger); color: var(--ink); }
+.opp.is-done { opacity: .55; }
 
 .pile { margin: auto; text-align: center; min-height: 140px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
 .pile-empty { font-size: 1.1rem; color: #cfe0d2; border: 2px dashed rgba(255,255,255,.3); border-radius: var(--radius); padding: 28px 40px; }
@@ -178,7 +176,6 @@ button, input, select { font: inherit; }
 
 .seat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
 .seat { background: rgba(0,0,0,.2); border-radius: var(--radius); padding: 12px; border: 2px solid transparent; display: flex; flex-direction: column; gap: 8px; }
-.seat.is-bust { opacity: .6; }
 .seat-head, .seat-foot { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
 .seat-foot { font-size: .88rem; color: #d3dfd2; }
 .seat-status { font-weight: 700; color: var(--gold); }
@@ -201,6 +198,21 @@ button, input, select { font: inherit; }
 .reveal h3 { margin: 0 0 8px; font-size: 1rem; color: var(--gold); }
 .reveal-row { display: flex; align-items: center; gap: 10px; margin: 6px 0; flex-wrap: wrap; }
 
+/* 抽鬼牌 */
+.card-row-draw { justify-content: center; max-width: 720px; }
+
+/* 99 */
+.nn-center { gap: 6px; }
+.nn-total { font-family: var(--font-display); line-height: 1; }
+.nn-total b { font-size: 4rem; color: var(--paper); }
+.nn-total small { font-size: 1.2rem; color: #cfe0d2; }
+.nn-total.is-hot b { color: var(--danger); }
+.nn-legend { margin: 6px 0 0; font-size: .82rem; color: #cfe0d2; display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 12px; }
+.nn-legend span { white-space: nowrap; }
+
+/* 吹牛 */
+.btn-rank { min-width: 2.6em; justify-content: center; padding-left: .5em; padding-right: .5em; }
+
 /* =========================================================
  * 撲克牌
  * ========================================================= */
@@ -216,6 +228,7 @@ button, input, select { font: inherit; }
 .card-lg { --w: 68px; }
 .card-red { color: var(--red); }
 .card-black { color: var(--black); }
+.card-joker { color: var(--gold-dark); }
 .card-corner { position: absolute; display: flex; flex-direction: column; align-items: center; line-height: 1; font-size: calc(var(--w) * .26); }
 .card-corner b { font-weight: 900; letter-spacing: -.05em; }
 .card-corner i { font-style: normal; font-size: .85em; }
@@ -242,7 +255,7 @@ button, input, select { font: inherit; }
 .card-row-tight .card + .card { margin-left: calc(var(--w) * -.55); }
 .card-row-fan { flex-wrap: nowrap; padding-top: 22px; overflow-x: auto; padding-bottom: 4px; }
 .card-row-fan .card + .card { margin-left: calc(var(--w) * -.38); }
-.zone-dealer .card-row, .pile .card-row, .seat .card-row { justify-content: center; }
+.pile .card-row, .seat .card-row { justify-content: center; }
 
 /* =========================================================
  * 覆蓋視窗

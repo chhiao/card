@@ -49,7 +49,7 @@ card-buddies/
 ├── core/                     ← 共用核心，新增遊戲時「通常不需要改」
 │   ├── base.js               ← 命名空間 CB、registerGame、defineRules、CB.h、CB.store
 │   ├── rng.js                ← 可重現亂數 CB.createRng(seed)
-│   ├── cards.js              ← 撲克牌資料結構與繪製 CB.Cards
+│   ├── cards.js              ← 撲克牌資料結構與繪製 CB.Cards（含鬼牌 Cards.joker()）
 │   ├── net.js                ← 線上連線 CB.Net（PeerJS / WebRTC，動態載入）
 │   ├── table.js              ← 牌桌控制器 CB.Table.mount()
 │   └── lobby.js              ← 大廳卡片渲染
@@ -82,13 +82,14 @@ card-buddies/
 - **顏色**：只能使用 `assets/style.css` 中 `:root` 的變數（`--felt`、`--paper`、`--gold`、`--red`…），不要在 JS 或 HTML 裡寫死顏色。
 - **字體**：標題 `--font-display`（Noto Serif TC），內文 `--font`（Noto Sans TC）。
 - **紙牌**：一律用 `CB.Cards.el()` 繪製（CSS 牌面，不用圖片），尺寸只有 `sm / md / lg` 三種。
+  需要鬼牌時用 `Cards.joker()`（`{ id:'JK', s:'X', r:0, joker:true }`），`Cards.el` / `Cards.label` 都認得它。
 - **Emoji**：每個遊戲一個代表 emoji；玩家用 🙋（真人）/ 🤖（電腦）；開局設定的好友座位用 🌐；提示用 💡；規則用 📖。
 - **元件重用**：新畫面優先使用既有 class，不要另外發明相似樣式：
 
 | 用途 | class |
 | --- | --- |
 | 按鈕 | `.btn`、`.btn-primary`（主要動作，一個畫面最多一個）、`.btn-ghost` |
-| 對手區 | `.opponents` > `.opp`（加 `.is-turn` 表示輪到他） |
+| 對手區 | `.opponents` > `.opp`（`.is-turn` 輪到他、`.is-danger` 快出完、`.is-done` 已下莊／出局） |
 | 桌面中央出牌區 | `.pile`、`.pile-label`、`.pile-empty` |
 | 自己的手牌 | `.my-hand` + `Cards.row(..., 'card-row-fan')` |
 | 每人一格的座位 | `.seat-grid` > `.seat`（`.seat-head` / `.seat-foot`） |
@@ -267,6 +268,6 @@ CB.Table.mount({
 
 ## 10. 待辦想法（歡迎依本文件規則實作）
 
-- 🃏 抽鬼牌（Old Maid）、心臟病、撿紅點、十三支
+- 🃏 心臟病、撿紅點、十三支
 - 📊 本機戰績頁（用 `CB.store` 記錄勝場）
 - 🌐 線上對戰：斷線重連、觀戰席、好友端只同步自己看得到的資訊（防作弊）
