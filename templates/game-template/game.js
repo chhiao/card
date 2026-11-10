@@ -25,7 +25,7 @@ CB.Table.mount({
         bar.appendChild(h('button', { class: 'btn btn-primary', onclick: function () { ctx.play(m); } }, '翻牌 🂠'));
       });
     } else if (!ctx.over && ctx.cp !== null) {
-      bar.appendChild(h('span', { class: 'turn-tip' }, '🤖 ' + ctx.players[ctx.cp].name + ' 思考中…'));
+      bar.appendChild(h('span', { class: 'turn-tip' }, ctx.waitText()));
     }
     ctx.root.appendChild(bar);
   }

@@ -7,7 +7,6 @@
 CB.registerGame({
   id: 'blackjack',
   name: '21 點',
-  en: 'Blackjack',
   emoji: '🂡',
   tagline: '跟電腦莊家比誰更接近 21，超過就爆！',
   players: { min: 1, max: 5, default: 2 },
@@ -29,7 +28,6 @@ CB.registerGame({
 CB.registerGame({
   id: 'big-two',
   name: '大老二',
-  en: 'Big Two',
   emoji: '👑',
   tagline: '台灣聚會必備！最先把 13 張牌出完的人贏。',
   players: { min: 2, max: 4, default: 4 },
@@ -51,7 +49,6 @@ CB.registerGame({
 CB.registerGame({
   id: 'sevens',
   name: '排七',
-  en: 'Sevens',
   emoji: '7️⃣',
   tagline: '從 7 開始往兩邊接龍，卡住別人、別被卡住。',
   players: { min: 3, max: 6, default: 4 },

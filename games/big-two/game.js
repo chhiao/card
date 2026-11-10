@@ -94,7 +94,7 @@
         if (Object.keys(selected).length) bar.appendChild(h('button', { class: 'btn btn-ghost', onclick: function () { selected = {}; ctx.rerender(); } }, '清除'));
         if (message) bar.appendChild(h('span', { class: 'hint-pop' }, message));
       } else if (!ctx.over && ctx.cp !== null) {
-        bar.appendChild(h('span', { class: 'turn-tip' }, '🤖 ' + ctx.players[ctx.cp].name + ' 思考中…'));
+        bar.appendChild(h('span', { class: 'turn-tip' }, ctx.waitText()));
       }
       ctx.root.appendChild(bar);
     }

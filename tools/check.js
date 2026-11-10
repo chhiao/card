@@ -16,7 +16,7 @@ try { vm.runInContext(rd('games/manifest.js'), ctx, { filename: 'games/manifest.
 catch (e) { errors.push('games/manifest.js 執行失敗：' + e.message); }
 var CB = sb.CB;
 
-var EXPECTED_SCRIPTS = ['../../core/base.js', '../../core/rng.js', '../../core/cards.js', '../../core/table.js', '../manifest.js', 'rules.js', 'game.js'];
+var EXPECTED_SCRIPTS = ['../../core/base.js', '../../core/rng.js', '../../core/cards.js', '../../core/net.js', '../../core/table.js', '../manifest.js', 'rules.js', 'game.js'];
 var ID_RE = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
 
 CB.games.forEach(function (g) {
@@ -63,7 +63,7 @@ fs.readdirSync(path.join(ROOT, 'games')).forEach(function (name) {
 });
 
 // 共用檔案存在
-['index.html', 'assets/style.css', 'core/table.js', 'core/lobby.js', 'AGENTS.md', 'CLAUDE.md', 'README.md', '.nojekyll']
+['index.html', 'assets/style.css', 'core/table.js', 'core/net.js', 'core/lobby.js', 'AGENTS.md', 'CLAUDE.md', 'README.md', '.nojekyll']
   .forEach(function (f) { if (!exists(f)) errors.push('缺少必要檔案 ' + f); });
 
 warns.forEach(function (w) { console.log('⚠️  ' + w); });

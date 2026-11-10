@@ -106,9 +106,9 @@ button, input, select { font: inherit; }
 .game-card:hover { transform: translateY(-4px) rotate(-.4deg); box-shadow: 0 18px 40px rgba(0,0,0,.35); }
 .game-emoji { font-size: 2.6rem; line-height: 1; }
 .game-card h3 { font-family: var(--font-display); font-size: 1.6rem; margin: .35em 0 0; }
-.game-card h3 small { font-family: var(--font); font-size: .85rem; color: var(--ink-soft); margin-left: .5em; font-weight: 500; }
 .game-card p { margin: .4em 0 .9em; color: var(--ink-soft); flex: 1; }
-.meta-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.meta-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.tag-row { margin-bottom: 14px; }
 .chip { font-size: .8rem; padding: .15em .7em; border-radius: 999px; background: var(--paper-2); color: var(--ink); }
 .chip-tag { background: transparent; border: 1px solid #d8cba9; }
 .game-card .btn { align-self: flex-start; }
@@ -145,7 +145,6 @@ button, input, select { font: inherit; }
   display: flex; flex-direction: column; gap: 18px;
 }
 .stage > * { position: relative; }
-.stage-cover { margin: auto; font-size: 6rem; opacity: .35; }
 
 .sidebar { display: flex; flex-direction: column; gap: 14px; }
 .panel { background: rgba(0,0,0,.25); border-radius: var(--radius); padding: 14px 16px; border: 1px solid rgba(255,255,255,.07); }
@@ -266,8 +265,13 @@ button, input, select { font: inherit; }
 .seat-list { display: flex; flex-direction: column; gap: 8px; }
 .seat-row { display: grid; grid-template-columns: 28px 1fr auto 88px; gap: 8px; align-items: center; }
 .seat-no { width: 28px; height: 28px; border-radius: 50%; background: var(--felt); color: var(--paper); display: grid; place-items: center; font-weight: 700; font-size: .9rem; }
-.modal-handoff { text-align: center; }
-.handoff-lock, .result-trophy { font-size: 3.4rem; }
+.modal-center { text-align: center; }
+.modal-icon, .result-trophy { font-size: 3.4rem; }
+.invite-box { margin-top: 12px; padding: 12px 14px; border-radius: var(--radius-sm); background: var(--paper-2); }
+.invite-title { margin: 0 0 8px; font-weight: 700; }
+.invite-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.invite-row .input { flex: 1 1 200px; }
+.invite-box .hint { margin-bottom: 0; }
 .ranking { padding: 0; list-style: none; counter-reset: r; margin: 14px 0 0; }
 .ranking li { counter-increment: r; display: flex; justify-content: space-between; padding: 10px 14px; border-radius: var(--radius-sm); background: var(--paper-2); margin-bottom: 6px; }
 .ranking li::before { content: counter(r); font-weight: 900; margin-right: 10px; color: var(--ink-soft); }

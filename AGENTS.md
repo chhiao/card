@@ -10,12 +10,12 @@
 **牌搭子 Card Buddies** 是一個「撲克牌遊戲大廳」網站：
 
 - 打開首頁（大廳）就能看到所有牌桌遊戲，點進去即可開局。
-- 每個座位都能設定成 **真人** 或 **電腦**（電腦分簡單／普通／困難）。
-- 多位真人時採 **同一台裝置輪流（hot-seat）**：換人前會遮住手牌，交給下一位再翻開。
+- 第 1 個座位是開局的人自己（也可以改成電腦＝觀戰），其他座位可以設定成 **好友（線上）** 或 **電腦**（電腦分簡單／普通／困難）。
+- 有好友座位時會開一個 **線上房間**，產生邀請連結（`games/<id>/index.html?join=<房號>`）；好友用自己的手機或電腦打開就能加入。
 - 純靜態網站，部署在 **GitHub Pages**，不需要後端、不需要登入、不需要建置（build）。
 
 這個專案的核心精神是：**共用的事情只做一次，新遊戲只寫規則與畫面**。
-開局設定、輪流交接、電腦回合、牌局紀錄、結算畫面全部由 `core/table.js` 處理。
+開局設定、線上房間、電腦回合、牌局紀錄、結算畫面全部由 `core/table.js`（連線細節在 `core/net.js`）處理。
 
 ---
 
@@ -29,7 +29,8 @@
 | 所有亂數必須用傳入的 `rng`（`CB.createRng(seed)`），**禁止 `Math.random()`**（唯一例外：`CB.randomSeed()`） | 同一個牌局編號（seed）必須能重現同一副牌 |
 | `rules.js` **不可以碰 DOM**（`document`、`window.xxx`、`localStorage`） | 規則要能在 Node 裡模擬測試（`tools/simulate.js`） |
 | `localStorage` 只能透過 `CB.store.get/set` 存取 | 已包好 try/catch，隱私模式不會壞掉 |
-| 外部資源只允許 Google Fonts（且要有系統字型備援） | 離線或被擋時網站仍可使用 |
+| 外部資源只允許 Google Fonts（且要有系統字型備援），以及線上對戰用的 PeerJS（見下方） | 離線或被擋時網站仍可使用 |
+| PeerJS 只能由 `core/net.js` **在需要時動態載入**（有好友座位或用邀請連結加入時），不可寫進 `<script>` | 只跟電腦玩時完全不連網；PeerJS 載入失敗也不影響單機遊戲 |
 | 所有路徑使用**相對路徑** | GitHub Pages 網址會帶 repo 名稱（`/<repo>/`），絕對路徑會壞 |
 
 ---
@@ -49,6 +50,7 @@ card-buddies/
 │   ├── base.js               ← 命名空間 CB、registerGame、defineRules、CB.h、CB.store
 │   ├── rng.js                ← 可重現亂數 CB.createRng(seed)
 │   ├── cards.js              ← 撲克牌資料結構與繪製 CB.Cards
+│   ├── net.js                ← 線上連線 CB.Net（PeerJS / WebRTC，動態載入）
 │   ├── table.js              ← 牌桌控制器 CB.Table.mount()
 │   └── lobby.js              ← 大廳卡片渲染
 ├── games/
@@ -80,7 +82,7 @@ card-buddies/
 - **顏色**：只能使用 `assets/style.css` 中 `:root` 的變數（`--felt`、`--paper`、`--gold`、`--red`…），不要在 JS 或 HTML 裡寫死顏色。
 - **字體**：標題 `--font-display`（Noto Serif TC），內文 `--font`（Noto Sans TC）。
 - **紙牌**：一律用 `CB.Cards.el()` 繪製（CSS 牌面，不用圖片），尺寸只有 `sm / md / lg` 三種。
-- **Emoji**：每個遊戲一個代表 emoji；玩家用 🙋（真人）/ 🤖（電腦）；提示用 💡；規則用 📖。
+- **Emoji**：每個遊戲一個代表 emoji；玩家用 🙋（真人）/ 🤖（電腦）；開局設定的好友座位用 🌐；提示用 💡；規則用 📖。
 - **元件重用**：新畫面優先使用既有 class，不要另外發明相似樣式：
 
 | 用途 | class |
@@ -92,6 +94,8 @@ card-buddies/
 | 每人一格的座位 | `.seat-grid` > `.seat`（`.seat-head` / `.seat-foot`） |
 | 操作列（放在最下面） | `.action-bar`，提示文字 `.turn-tip`，彈出提示 `.hint-pop` |
 | 小標籤 | `.badge`、`.badge-warn` |
+| 置中的訊息視窗 | `.modal.modal-center` + `.modal-icon` |
+| 邀請連結框（開局設定） | `.invite-box` > `.invite-title`、`.invite-row` |
 
 - **文案**：使用**繁體中文（台灣用語）**，口吻輕鬆友善。例：「要牌」「停牌」「Pass」「蓋牌」「出牌」「輪到你」。
   牌的寫法統一為 `♠7`、`♥A`（用 `Cards.label()` 產生），花色順序與名稱：♣ 梅花、♦ 方塊、♥ 紅心、♠ 黑桃。
@@ -110,12 +114,21 @@ card-buddies/
 外殼完全相同（從 `templates/game-template/index.html` 複製），`<script>` 載入順序固定：
 
 ```
-../../core/base.js → ../../core/rng.js → ../../core/cards.js → ../../core/table.js
+../../core/base.js → ../../core/rng.js → ../../core/cards.js → ../../core/net.js → ../../core/table.js
 → ../manifest.js → rules.js → game.js
 ```
 
 `CB.Table.mount()` 會自動產生：頂部列（← 大廳／遊戲名稱／📖 規則／🔄 重新開局）、牌桌 `#stage`、
-右側欄（玩家列表、牌局紀錄、牌局編號）、開局設定視窗、交接視窗、結算視窗。
+右側欄（玩家列表、牌局紀錄、牌局編號）、開局設定視窗（含邀請連結）、好友加入／等待視窗、結算視窗。
+
+### 5.3 線上對戰架構
+
+- **房主**（開局設定的那台）跑完整的 `rules.js`；每次狀態改變都把 `state` 整份同步給好友。
+- **好友**（網址帶 `?join=<房號>`）只送出 `{ t:'move', move }`，房主檢查「是不是輪到他、動作合不合法」才套用。
+- 好友端的 `ctx.legal()`、`ctx.hint()` 直接在同步過來的 `state` 上跑 `rules.js`，所以 **`state` 必須能被 JSON 序列化**（不要放 `Map`、`Set`、class 實例；函式會被丟掉，只能在房主端的 `play()` 使用，例如 `state.rng`）。
+- `play()` 找牌一律用 **牌的 id**（`Cards.take(hand, ids)`），不可以用物件比對（好友送來的牌是 JSON 還原的新物件）。
+- 好友斷線時，該座位自動改成電腦（普通）代打，牌局不會卡住。
+- 因為同步的是整份 `state`，懂開發者工具的人看得到別人的牌；本站定位是朋友間娛樂，不做防作弊。
 `game.js` 的 `render(ctx)` **只負責把內容畫進 `ctx.root`（#stage）**。
 
 ---
@@ -128,14 +141,13 @@ card-buddies/
 CB.registerGame({
   id: 'old-maid',               // 必填，kebab-case，與資料夾同名
   name: '抽鬼牌',                // 必填，中文名稱
-  en: 'Old Maid',               // 選填，英文名稱
   emoji: '👻',                  // 必填，一個 emoji
   tagline: '最後拿著鬼牌的人就輸了！', // 必填，28 字以內
   players: { min: 2, max: 6, default: 4 }, // 必填
   minutes: '5–10',              // 選填，一局大約幾分鐘
   difficulty: 1,                // 選填，1–3（顯示成 ★）
   tags: ['入門', '運氣'],        // 必填，1–3 個
-  hiddenInfo: true,             // 選填，預設 true；所有牌都公開的遊戲設 false（不會出現交接畫面）
+  hiddenInfo: true,             // 選填，預設 true；所有牌都公開的遊戲設 false（每個人都看得到所有手牌）
   options: { rounds: 3 },       // 選填，會傳給 rules.create() 的第三個參數
   aiDelay: 800,                 // 選填，電腦出牌前等待毫秒數
   rules: ['規則 1', '規則 2', '規則 3'] // 必填，至少 3 條，每條一句話
@@ -185,20 +197,21 @@ CB.Table.mount({
 | `ctx.state` / `ctx.players` | 目前狀態與玩家設定 |
 | `ctx.root` | 要畫進去的容器（每次 render 前會清空） |
 | `ctx.cp` | 目前輪到誰（index 或 null） |
-| `ctx.viewer` | 螢幕前的是誰；`-1` 代表觀戰（全部都是電腦） |
+| `ctx.viewer` | 螢幕前的是誰（房主是 0，好友是自己的座位）；`-1` 代表觀戰（第 1 位設成電腦） |
 | `ctx.canAct` | 現在是否可以按按鈕 |
 | `ctx.seesHand(i)` | 第 i 位的手牌能不能翻開顯示（**畫別人手牌前一定要檢查**） |
 | `ctx.legal()` | 目前合法動作 |
 | `ctx.play(move)` | 送出動作（只有 `canAct` 時有效） |
 | `ctx.hint()` | 取得 normal 難度 AI 的建議動作（給「💡 提示」按鈕） |
 | `ctx.rerender()` | 只重畫，不推進遊戲（例如選牌時） |
+| `ctx.waitText()` | 不是自己回合時操作列要顯示的文字（`🤖 阿牌 思考中…`／`🙋 小明 思考中…`） |
 | `ctx.over` / `ctx.spectator` | 是否已結束 / 是否觀戰 |
 | `ctx.h` / `ctx.Cards` | DOM 產生器與撲克牌工具 |
 
 畫面規範：
 
 1. 由上到下的順序：**對手 → 桌面中央 → 自己的手牌 → 操作列 `.action-bar`**。
-2. 輪到電腦時，操作列顯示 `🤖 名字 思考中…`；輪到真人時才出現按鈕。
+2. 不是自己的回合時，操作列顯示 `ctx.waitText()`；`ctx.canAct` 為 true 時才出現按鈕。
 3. 每個遊戲都要有 **💡 提示** 按鈕（用 `ctx.hint()`）。
 4. 不要在 `game.js` 裡寫遊戲邏輯；判斷「能不能出」一律用 `ctx.legal()` 或 `rules.js` 匯出的工具函式。
 5. 跨 render 的暫存 UI 狀態（例如選起來的牌）放在 `game.js` 的 IIFE 區域變數，並在換回合時清空（參考 `games/big-two/game.js`）。
@@ -218,7 +231,7 @@ CB.Table.mount({
    node tools/check.js                 # 結構檢查
    node tools/simulate.js <id> 300     # 電腦互打 300 局，不可卡死、不可出不合法的牌
    python3 -m http.server 8000         # 打開 http://localhost:8000 實際玩一局：
-                                       #   ① 1 真人 + 電腦  ② 2 位真人（確認交接畫面會遮牌）  ③ 全電腦觀戰
+                                       #   ① 1 真人 + 電腦  ② 1 個座位設成好友，用另一個分頁打開邀請連結加入（確認看不到別人的牌）  ③ 第 1 位設成電腦觀戰
    ```
 8. 大廳會自動出現新卡片，**不需要修改 `index.html` 或 `core/lobby.js`**。
 9. 更新 `README.md` 的遊戲列表。
@@ -256,4 +269,4 @@ CB.Table.mount({
 
 - 🃏 抽鬼牌（Old Maid）、心臟病、撿紅點、十三支
 - 📊 本機戰績頁（用 `CB.store` 記錄勝場）
-- 🌐 線上連線對戰（需要後端或 WebRTC，屬於架構變更，實作前要先更新第 2 節）
+- 🌐 線上對戰：斷線重連、觀戰席、好友端只同步自己看得到的資訊（防作弊）

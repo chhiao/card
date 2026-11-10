@@ -19,12 +19,14 @@
     var stars = '★★★'.slice(0, g.difficulty || 1) + '☆☆☆'.slice(0, 3 - (g.difficulty || 1));
     grid.appendChild(h('a', { class: 'game-card', href: 'games/' + g.id + '/index.html', 'data-suit': SUITS[i % 4] },
       h('div', { class: 'game-emoji' }, g.emoji),
-      h('h3', null, g.name, g.en ? h('small', null, g.en) : null),
+      h('h3', null, g.name),
       h('p', null, g.tagline),
       h('div', { class: 'meta-row' },
         h('span', { class: 'chip' }, '👥 ' + players),
         g.minutes ? h('span', { class: 'chip' }, '⏱ ' + g.minutes + ' 分鐘') : null,
-        h('span', { class: 'chip', title: '難度' }, stars),
+        h('span', { class: 'chip', title: '難度' }, stars)
+      ),
+      h('div', { class: 'meta-row tag-row' },
         g.tags.map(function (t) { return h('span', { class: 'chip chip-tag' }, '#' + t); })
       ),
       h('span', { class: 'btn btn-primary' }, '開桌 →')

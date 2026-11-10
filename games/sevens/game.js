@@ -76,7 +76,7 @@ CB.Table.mount({
         }
       }, '💡 提示'));
     } else if (!ctx.over && ctx.cp !== null) {
-      bar.appendChild(h('span', { class: 'turn-tip' }, '🤖 ' + ctx.players[ctx.cp].name + ' 思考中…'));
+      bar.appendChild(h('span', { class: 'turn-tip' }, ctx.waitText()));
     }
     ctx.root.appendChild(bar);
 

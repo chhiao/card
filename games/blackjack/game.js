@@ -23,7 +23,7 @@ CB.Table.mount({
     s.seats.forEach(function (seat, i) {
       var p = ctx.players[i], v = rules.value(seat.hand).total;
       var status = {
-        playing: i === s.turn ? (p.type === 'human' ? '你的回合' : '思考中…') : '等待中', stand: '停牌', bust: '爆牌 💥',
+        playing: i === s.turn ? (i === ctx.viewer ? '你的回合' : '思考中…') : '等待中', stand: '停牌', bust: '爆牌 💥',
         bj: 'Blackjack ✨', out: '籌碼不足'
       }[seat.status];
       if (s.phase !== 'play' && seat.result) status = seat.result + '（' + (seat.delta >= 0 ? '+' : '') + seat.delta + '）';
@@ -60,7 +60,7 @@ CB.Table.mount({
         }, '💡 提示'));
       }
     } else if (!ctx.over) {
-      bar.appendChild(h('span', { class: 'turn-tip' }, '🤖 ' + (ctx.cp !== null ? ctx.players[ctx.cp].name : '') + ' 思考中…'));
+      bar.appendChild(h('span', { class: 'turn-tip' }, ctx.waitText()));
     }
     ctx.root.appendChild(bar);
 
