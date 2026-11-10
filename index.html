@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>牌搭子 Card Buddies｜線上撲克牌遊戲大廳</title>
+  <meta name="description" content="21 點、大老二、排七……找朋友輪流玩，或跟電腦對戰的撲克牌遊戲大廳。">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🃏</text></svg>">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body class="page-lobby">
+  <main class="lobby">
+    <header class="hero">
+      <div class="hero-fan" id="hero-fan" aria-hidden="true"></div>
+      <h1>牌搭子<small>CARD BUDDIES</small></h1>
+      <p>找朋友圍一桌，或叫電腦來湊人數——打開就能玩的撲克牌遊戲大廳。</p>
+    </header>
+
+    <h2 class="section-title">選一張牌桌</h2>
+    <div class="game-grid" id="game-grid"></div>
+
+    <h2 class="section-title">怎麼玩</h2>
+    <ol class="steps">
+      <li><b>選遊戲</b><p>點上面任何一張牌桌卡片，就會開一桌新的牌局。</p></li>
+      <li><b>安排座位</b><p>每個座位都能切換「真人」或「電腦」，電腦有簡單、普通、困難三種難度。</p></li>
+      <li><b>輪流傳手機</b><p>多位真人一起玩時，換人會先遮住手牌，交給下一位再翻開。</p></li>
+    </ol>
+
+    <footer class="footer">
+      <p>所有遊戲都在瀏覽器裡執行，不用註冊、不用下載。<br>本站依照 <code>AGENTS.md</code> 的規則持續擴充，更多牌桌陸續開張中 🃏</p>
+    </footer>
+  </main>
+
+  <script src="core/base.js"></script>
+  <script src="core/rng.js"></script>
+  <script src="core/cards.js"></script>
+  <script src="games/manifest.js"></script>
+  <script src="core/lobby.js"></script>
+</body>
+</html>
