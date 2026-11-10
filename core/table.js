@@ -597,6 +597,7 @@
     openOverlay(T, h('div', { class: 'modal' },
       h('div', { class: 'modal-head' }, h('span', { class: 'modal-emoji' }, '📖'), h('h2', null, T.meta.name + ' 規則')),
       h('ul', { class: 'rule-list' }, T.meta.rules.map(function (r) { return h('li', null, r); })),
+      h('p', { class: 'hint' }, h('a', { href: '../../wiki.html#' + T.meta.id, target: '_blank' }, '📚 到規則百科看新手攻略')),
       h('div', { class: 'modal-actions' }, close)
     ));
   }

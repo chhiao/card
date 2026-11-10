@@ -40,6 +40,7 @@
 ```
 card-buddies/
 ├── index.html                ← 大廳（首頁），卡片由 manifest 自動產生
+├── wiki.html                 ← 規則百科（LLM Wiki 的網頁版，見第 11 節）
 ├── AGENTS.md                 ← 本文件（專案規則）
 ├── CLAUDE.md                 ← Claude Code 入口，引用本文件
 ├── README.md                 ← 給人看的專案介紹
@@ -52,17 +53,26 @@ card-buddies/
 │   ├── cards.js              ← 撲克牌資料結構與繪製 CB.Cards（含鬼牌 Cards.joker()）
 │   ├── net.js                ← 線上連線 CB.Net（PeerJS / WebRTC，動態載入）
 │   ├── table.js              ← 牌桌控制器 CB.Table.mount()
-│   └── lobby.js              ← 大廳卡片渲染
+│   ├── lobby.js              ← 大廳卡片渲染
+│   ├── markdown.js           ← 極簡 Markdown 轉 HTML CB.markdown（純函式，Node 可執行）
+│   └── wiki.js               ← 規則百科頁的畫面
 ├── games/
 │   ├── manifest.js           ← 遊戲清單（大廳與牌桌都讀這裡）
 │   └── <game-id>/            ← 一個遊戲一個資料夾
 │       ├── index.html        ← 固定外殼，只複製不修改
 │       ├── rules.js          ← 純規則 + 電腦 AI（Node 可執行）
 │       └── game.js           ← 畫面：render(ctx)
+├── wiki/                     ← LLM Wiki（AI 維護的知識庫，見第 11 節）
+│   ├── raw/                  ← 原始資料：只新增、不修改
+│   ├── pages/<page-id>.md    ← 整理好的百科頁面（遊戲頁的 page-id = 遊戲 id）
+│   ├── index.md              ← 目錄：每一頁都要列在這裡
+│   ├── log.md                ← 更新紀錄（新的寫最上面）
+│   └── wiki-data.js          ← 自動產生，不要手改（node tools/wiki.js）
 ├── templates/
 │   └── game-template/        ← 新遊戲模板（可運作的「比大小」範例）
 └── tools/
-    ├── check.js              ← 結構檢查
+    ├── check.js              ← 結構檢查（也會跑百科檢查）
+    ├── wiki.js               ← 百科檢查 + 產生 wiki/wiki-data.js
     └── simulate.js           ← 讓電腦互打 N 局，確認規則不會卡死
 ```
 
@@ -97,6 +107,7 @@ card-buddies/
 | 小標籤 | `.badge`、`.badge-warn` |
 | 置中的訊息視窗 | `.modal.modal-center` + `.modal-icon` |
 | 邀請連結框（開局設定） | `.invite-box` > `.invite-title`、`.invite-row` |
+| 規則百科 | `.wiki-layout` > `.wiki-nav`（`.wiki-nav-item`、`.wiki-search`）＋ `.wiki-article`（`.wiki-head`、`.wiki-body`、`.wiki-sources`）；大廳入口 `.wiki-promo` |
 
 - **文案**：使用**繁體中文（台灣用語）**，口吻輕鬆友善。例：「要牌」「停牌」「Pass」「蓋牌」「出牌」「輪到你」。
   牌的寫法統一為 `♠7`、`♥A`（用 `Cards.label()` 產生），花色順序與名稱：♣ 梅花、♦ 方塊、♥ 紅心、♠ 黑桃。
@@ -108,7 +119,7 @@ card-buddies/
 ## 5. 頁面結構
 
 ### 5.1 大廳 `index.html`
-固定區塊：Hero（扇形牌 + 標題）→「選一張牌桌」遊戲卡片 →「怎麼玩」三步驟 → Footer。
+固定區塊：Hero（扇形牌 + 標題）→「選一張牌桌」遊戲卡片 →「怎麼玩」三步驟 →「規則百科」入口 → Footer。
 遊戲卡片由 `core/lobby.js` 依 `games/manifest.js` **自動產生**，新增遊戲時**不要手動改 `index.html`**。
 
 ### 5.2 牌桌頁 `games/<id>/index.html`
@@ -122,7 +133,14 @@ card-buddies/
 `CB.Table.mount()` 會自動產生：頂部列（← 大廳／遊戲名稱／📖 規則／🔄 重新開局）、牌桌 `#stage`、
 右側欄（玩家列表、牌局紀錄、牌局編號）、開局設定視窗（含邀請連結）、好友加入／等待視窗、結算視窗。
 
-### 5.3 線上對戰架構
+### 5.3 規則百科 `wiki.html`
+
+`<script>` 載入順序：`core/base.js → core/rng.js → core/cards.js → core/markdown.js → games/manifest.js → wiki/wiki-data.js → core/wiki.js`。
+網址用 hash 切換頁面：`wiki.html`（首頁）、`wiki.html#big-two`、`wiki.html#log`。左邊是搜尋＋分類目錄，右邊是米白紙張樣式的文章。
+遊戲頁會自動顯示 manifest 的人數／時間／標籤與「開一桌」按鈕；牌桌頁的 📖 規則視窗會連到對應的百科頁。
+新增百科內容**只改 `wiki/` 底下的 .md**，不需要改 `wiki.html` 或 `core/wiki.js`。
+
+### 5.4 線上對戰架構
 
 - **房主**（開局設定的那台）跑完整的 `rules.js`；每次狀態改變都把 `state` 整份同步給好友。
 - **好友**（網址帶 `?join=<房號>`）只送出 `{ t:'move', move }`，房主檢查「是不是輪到他、動作合不合法」才套用。
@@ -236,13 +254,15 @@ CB.Table.mount({
    ```
 8. 大廳會自動出現新卡片，**不需要修改 `index.html` 或 `core/lobby.js`**。
 9. 更新 `README.md` 的遊戲列表。
+10. **寫百科頁**：新增 `wiki/pages/<id>.md`（`game: <id>`，內文用 `{{rules}}` 帶出本站規則，再寫新手攻略），把規則選擇存進 `wiki/raw/`，更新 `wiki/index.md` 與 `wiki/log.md`，最後跑 `node tools/wiki.js`（流程見第 11 節）。少了這頁 `check.js` 會報錯。
 
 ### 其他常見任務
 
 - **調整 AI**：只改該遊戲 `rules.js` 的 `ai()`，改完跑 `simulate.js` 確認難度排序沒有亂掉。
 - **修改共用樣式**：改 `assets/style.css`，並檢查**所有遊戲頁面**與大廳都沒有跑版。
 - **修改 `core/`**：屬於高風險修改。必須確認不破壞第 6 節的介面；改完要對所有遊戲跑 `simulate.js` 並各實際開一局。
-- **新增新的頁面類型**（例如「規則百科」「戰績頁」）：放在根目錄（`<name>.html`），沿用 `assets/style.css` 與 `CB.h`，並在大廳 Footer 或 Hero 加入連結；在本文件第 3、5 節補上說明。
+- **更新百科**：照第 11 節的 Ingest／Query／Lint 流程。
+- **新增新的頁面類型**（例如「戰績頁」）：放在根目錄（`<name>.html`），沿用 `assets/style.css` 與 `CB.h`，並在大廳 Footer 或 Hero 加入連結；在本文件第 3、5 節補上說明。
 
 ---
 
@@ -271,3 +291,52 @@ CB.Table.mount({
 - 🃏 心臟病、撿紅點、十三支
 - 📊 本機戰績頁（用 `CB.store` 記錄勝場）
 - 🌐 線上對戰：斷線重連、觀戰席、好友端只同步自己看得到的資訊（防作弊）
+
+---
+
+## 11. LLM Wiki（規則百科）
+
+本專案用 **LLM Wiki** 的方式維護知識庫：人類只負責提供原始資料和提問，**由 AI 負責整理、交叉連結、維持一致**，網頁 `wiki.html` 把結果呈現出來。
+
+### 11.1 三層結構
+
+| 層 | 位置 | 誰寫 | 規則 |
+| --- | --- | --- | --- |
+| 原始資料 | `wiki/raw/*.md` | 人類提供，AI 可以代為記錄 | **只新增、不修改**。檔名 `YYYY-MM-DD-<主題>.md`，第一行 `# 原始資料：標題`，開頭寫來源 |
+| 百科頁面 | `wiki/pages/<page-id>.md` | AI | 由原始資料整理而成，可以隨時改寫 |
+| 規則（schema） | 本節 | 人類＋AI | 規定格式與流程 |
+
+### 11.2 頁面格式
+
+```markdown
+---
+title: 99                         # 必填
+emoji: 💯                         # 必填，一個 emoji
+category: 遊戲攻略                 # 必填：遊戲攻略／基礎知識／網站說明
+game: ninety-nine                 # 遊戲頁才寫，必須是 manifest 裡的 id
+sources: [2026-11-10-rule-decisions.md]   # 這頁根據哪些 raw/ 檔案
+updated: 2026-11-10               # 必填，最後更新日期
+---
+內文（Markdown）
+```
+
+可用語法：`##`／`###` 標題、段落、`-`／`1.` 清單、表格、`>` 引言、`**粗體**`、`` `程式碼` ``、`[文字](網址)`，以及本站專用：
+
+- `[[page-id]]` 或 `[[page-id|顯示文字]]`：百科內部連結。
+- `{{♠A ♥10 🃏}}`：畫出撲克牌（用 `Cards.el`）。
+- `{{rules}}`：帶出 manifest 的 `rules`（本站規則只寫在 manifest 一個地方，百科不要重抄）。
+- 不可以寫原生 HTML（會被跳脫成文字）。
+
+### 11.3 三種操作
+
+1. **Ingest（匯入）**：有新資料時（使用者確認的規則、模擬勝率、玩家回饋…）
+   ① 存成 `wiki/raw/` 新檔 → ② 更新或新增相關頁面、補上 `[[連結]]` 與 `sources` → ③ 更新 `wiki/index.md` → ④ 在 `wiki/log.md` 最上面加 `## [YYYY-MM-DD] ingest | 標題`。
+2. **Query（查詢）**：回答使用者關於規則或網站的問題時，**先讀 `wiki/index.md` 和相關頁面**再回答；答案有保存價值就整理成新頁面，並記一筆 `query`。
+3. **Lint（健康檢查）**：跑 `node tools/wiki.js`（會檢查 frontmatter、斷掉的連結、孤兒頁面、牌的寫法、每個遊戲都有攻略頁），
+   再由 AI 檢查頁面之間有沒有互相矛盾、和 manifest 的規則或實際程式是否一致，記一筆 `lint`。
+
+### 11.4 注意事項
+
+- 改完任何 `wiki/` 檔案都要執行 `node tools/wiki.js` 重新產生 `wiki/wiki-data.js`（網站要能用 `file://` 開，瀏覽器不能直接讀 .md）；`check.js` 會檢查它是不是最新的。
+- 百科寫的是**本站實際行為**：寫按鈕名稱、規則、勝率前先對照程式碼或 raw 資料，不要憑印象。
+- 文案沿用第 4 節（繁體中文、台灣用語、牌寫成 `♠7`）。

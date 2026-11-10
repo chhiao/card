@@ -66,6 +66,17 @@ fs.readdirSync(path.join(ROOT, 'games')).forEach(function (name) {
 ['index.html', 'assets/style.css', 'core/table.js', 'core/net.js', 'core/lobby.js', 'AGENTS.md', 'CLAUDE.md', 'README.md', '.nojekyll']
   .forEach(function (f) { if (!exists(f)) errors.push('缺少必要檔案 ' + f); });
 
+// LLM Wiki（規則百科）：內容檢查 + wiki-data.js 是否是最新的（見 AGENTS.md 第 11 節）
+['wiki.html', 'core/markdown.js', 'core/wiki.js', 'wiki/index.md', 'wiki/log.md']
+  .forEach(function (f) { if (!exists(f)) errors.push('缺少百科檔案 ' + f); });
+try {
+  var wiki = require('./wiki.js').lint();
+  wiki.errors.forEach(function (e) { errors.push('[百科] ' + e); });
+  wiki.warns.forEach(function (w) { warns.push('[百科] ' + w); });
+  if (!wiki.errors.length && (!exists('wiki/wiki-data.js') || rd('wiki/wiki-data.js').replace(/\r\n?/g, '\n') !== wiki.output))
+    errors.push('[百科] wiki/wiki-data.js 不是最新的：請執行 node tools/wiki.js');
+} catch (e) { errors.push('[百科] tools/wiki.js 執行失敗：' + e.message); }
+
 warns.forEach(function (w) { console.log('⚠️  ' + w); });
 if (errors.length) {
   errors.forEach(function (e) { console.error('✗ ' + e); });

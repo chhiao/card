@@ -14,6 +14,12 @@
 
 每個座位都能選「好友」或「電腦」（簡單／普通／困難）。選了好友座位就會產生邀請連結，傳給朋友後，大家用自己的手機或電腦一起玩（透過 PeerJS 點對點連線，不需要註冊）。
 
+# 規則百科（LLM Wiki）
+
+打開 [`wiki.html`](wiki.html) 就能看到每個遊戲的本站規則、新手攻略、名詞小辭典與電腦難度實測。
+
+百科採用 **LLM Wiki** 的做法：原始資料放 `wiki/raw/`（例如規則選擇紀錄、模擬勝率），由 AI 整理成 `wiki/pages/` 的 Markdown 頁面並互相連結，`wiki/index.md` 是目錄、`wiki/log.md` 是更新紀錄。改完執行 `node tools/wiki.js` 檢查並產生網頁用的資料。流程寫在 `AGENTS.md` 第 11 節。
+
 # 專案重點：AGENTS.md
 
 不只是一個網頁，而是一套**可以持續擴充的規則**。[`AGENTS.md`](AGENTS.md) 定義了：
@@ -36,5 +42,6 @@ python3 -m http.server 8000
 
 ```bash
 node tools/check.js            # 檢查檔案結構是否符合 AGENTS.md
+node tools/wiki.js             # 檢查百科並產生 wiki/wiki-data.js
 node tools/simulate.js         # 讓電腦互打，每個遊戲 200 局，確認規則不會卡死
 ```
